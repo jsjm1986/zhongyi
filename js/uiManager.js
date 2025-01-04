@@ -157,18 +157,64 @@ class UIManager {
 
     // 导出聊天记录
     exportChatHistory() {
-        const history = {
-            chat: Array.from(this.chatMessages.children).map(msg => ({
-                type: msg.classList.contains('user-message') ? 'user' : 'ai',
-                content: msg.textContent
-            }))
-        };
+        // 准备导出内容
+        let exportContent = '冯氏中医智能问诊系统诊疗记录\n';
+        exportContent += '================================\n\n';
+        exportContent += `生成时间：${new Date().toLocaleString()}\n\n`;
 
-        const blob = new Blob([JSON.stringify(history, null, 2)], { type: 'application/json' });
+        // 添加问诊记录
+        exportContent += '一、问诊记录\n';
+        exportContent += '--------------------------------\n\n';
+        const messages = Array.from(this.chatMessages.children);
+        messages.forEach(msg => {
+            const isUser = msg.classList.contains('user-message');
+            const content = msg.textContent.trim();
+            if (content) {
+                exportContent += `${isUser ? '患者' : '医生'}：${content}\n\n`;
+            }
+        });
+
+        // 添加辨证分析结果
+        const diagnosisContent = this.diagnosisSummary.textContent.trim();
+        if (diagnosisContent) {
+            exportContent += '\n二、辨证分析\n';
+            exportContent += '--------------------------------\n\n';
+
+            // 提取各个部分的内容
+            const sections = diagnosisContent.split(/(?=【症状分析】|【辨证方法】|【.*?辨证】|治疗建议：)/g);
+            sections.forEach(section => {
+                if (section.trim()) {
+                    exportContent += section.trim() + '\n\n';
+                }
+            });
+        }
+
+        // 添加治疗方案
+        if (chatManager.treatmentHistory.length > 0) {
+            exportContent += '\n三、治疗方案\n';
+            exportContent += '--------------------------------\n\n';
+            const treatmentContent = chatManager.treatmentHistory
+                .filter(msg => msg.role === 'assistant')
+                .map(msg => msg.content)
+                .join('\n\n');
+            exportContent += treatmentContent + '\n\n';
+        }
+
+        // 添加注意事项
+        exportContent += '\n注意事项\n';
+        exportContent += '--------------------------------\n';
+        exportContent += '1. 本记录由AI智能辅助系统生成，仅供参考\n';
+        exportContent += '2. 具体诊疗方案请遵医嘱\n';
+        exportContent += '3. 如有不适，请及时就医\n';
+        exportContent += '\n© ' + new Date().getFullYear() + ' 中医智能问诊系统';
+
+        // 创建并下载文件
+        const blob = new Blob([exportContent], { type: 'text/plain;charset=utf-8' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `中医问诊记录_${new Date().toISOString().split('T')[0]}.json`;
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+        a.download = `中医诊疗记录_${timestamp}.txt`;
         a.click();
         URL.revokeObjectURL(url);
     }
@@ -179,7 +225,7 @@ class UIManager {
         printWindow.document.write(`
             <html>
                 <head>
-                    <title>中医诊断报告</title>
+                    <title>冯氏中医诊断报告</title>
                     <style>
                         body { font-family: "Microsoft YaHei", sans-serif; padding: 20px; }
                         h1 { text-align: center; color: #2c3e50; }
@@ -189,7 +235,7 @@ class UIManager {
                     </style>
                 </head>
                 <body>
-                    <h1>中医诊断报告</h1>
+                    <h1>冯氏中医诊断报告</h1>
                     <div class="section">
                         <h2>诊断内容</h2>
                         <div class="content">${this.diagnosisSummary.innerHTML}</div>
