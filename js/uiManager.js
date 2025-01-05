@@ -224,74 +224,106 @@ class UIManager {
 
     // 导出聊天记录
     exportChatHistory() {
-        const timestamp = new Date().toLocaleString();
-        let content = '';
-        
-        // 添加标题和分隔线
-        content += '=================================\n';
-        content += '    冯氏中医智能问诊系统诊疗记录    \n';
-        content += '=================================\n\n';
-        
-        // 添加基本信息
-        content += '【基本信息】\n';
-        content += '---------------------------------\n';
-        content += `就诊时间：${timestamp}\n`;
-        content += `患者姓名：${this.userInfo.name}\n`;
-        content += `性    别：${this.userInfo.gender}\n`;
-        content += `年    龄：${this.userInfo.age}岁\n\n`;
-        
-        // 添加问诊记录
-        content += '【问诊记录】\n';
-        content += '---------------------------------\n';
-        const messages = Array.from(this.chatMessages.children);
-        messages.forEach(msg => {
-            const isUser = msg.classList.contains('user-message');
-            const messageContent = msg.querySelector('.message-content') || msg;
-            const text = messageContent.textContent || messageContent.innerText;
-            content += `${isUser ? '患者' : '医生'}：${text}\n\n`;
-        });
-        
-        // 添加辨证分析结果
-        if (this.diagnosisSummary.innerHTML) {
-            content += '【辨证分析】\n';
+        try {
+            const timestamp = new Date().toLocaleString();
+            let content = '';
+            
+            // 添加标题和分隔线
+            content += '=================================\n';
+            content += '    冯氏中医智能问诊系统诊疗记录    \n';
+            content += '=================================\n\n';
+            
+            // 添加基本信息
+            content += '【基本信息】\n';
             content += '---------------------------------\n';
-            const diagnosisText = this.diagnosisSummary.textContent || this.diagnosisSummary.innerText;
-            content += diagnosisText + '\n\n';
-        }
-        
-        // 添加治疗方案（如果有）
-        if (chatManager.treatmentHistory && chatManager.treatmentHistory.length > 0) {
-            content += '【治疗方案】\n';
+            content += `就诊时间：${timestamp}\n`;
+            content += `患者姓名：${this.userInfo.name}\n`;
+            content += `性    别：${this.userInfo.gender}\n`;
+            content += `年    龄：${this.userInfo.age}岁\n\n`;
+            
+            // 添加问诊记录
+            content += '【问诊记录】\n';
             content += '---------------------------------\n';
-            const treatmentContent = chatManager.treatmentHistory
-                .filter(msg => msg.role === 'assistant')
-                .map(msg => msg.content)
-                .join('\n\n');
-            content += treatmentContent + '\n\n';
-        }
-        
-        // 添加注意事项
-        content += '【注意事项】\n';
-        content += '---------------------------------\n';
-        content += '1. 本记录由AI智能辅助系统生成，仅供参考\n';
-        content += '2. 具体诊疗方案请遵医嘱\n';
-        content += '3. 如有不适，请及时就医\n\n';
-        
-        // 添加页脚
-        content += '=================================\n';
-        content += '    冯氏中医智能问诊系统    \n';
-        content += `    报告生成时间：${timestamp}    \n`;
-        content += '=================================\n';
+            const messages = Array.from(this.chatMessages.children);
+            messages.forEach(msg => {
+                const isUser = msg.classList.contains('user-message');
+                const messageContent = msg.querySelector('.message-content') || msg;
+                const text = messageContent.textContent || messageContent.innerText;
+                content += `${isUser ? '患者' : '医生'}：${text}\n\n`;
+            });
+            
+            // 添加辨证分析结果
+            if (this.diagnosisSummary.innerHTML) {
+                content += '【辨证分析】\n';
+                content += '---------------------------------\n';
+                const diagnosisText = this.diagnosisSummary.textContent || this.diagnosisSummary.innerText;
+                content += diagnosisText + '\n\n';
+            }
+            
+            // 添加治疗方案（如果有）
+            if (chatManager.treatmentHistory && chatManager.treatmentHistory.length > 0) {
+                content += '【治疗方案】\n';
+                content += '---------------------------------\n';
+                const treatmentContent = chatManager.treatmentHistory
+                    .filter(msg => msg.role === 'assistant')
+                    .map(msg => msg.content)
+                    .join('\n\n');
+                content += treatmentContent + '\n\n';
+            }
+            
+            // 添加注意事项
+            content += '【注意事项】\n';
+            content += '---------------------------------\n';
+            content += '1. 本记录由AI智能辅助系统生成，仅供参考\n';
+            content += '2. 具体诊疗方案请遵医嘱\n';
+            content += '3. 如有不适，请及时就医\n\n';
+            
+            // 添加页脚
+            content += '=================================\n';
+            content += '    冯氏中医智能问诊系统    \n';
+            content += `    报告生成时间：${timestamp}    \n`;
+            content += '=================================\n';
 
-        // 创建并下载文件
-        const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = `冯氏中医诊疗记录_${this.userInfo.name}_${timestamp.replace(/[/:]/g, '')}.txt`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(a.href);
+            // 创建文件名
+            const fileName = `冯氏中医诊疗记录_${this.userInfo.name}_${timestamp.replace(/[/:]/g, '')}.txt`;
+
+            // 检查是否为移动设备
+            if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+                // 移动设备：使用 Blob 和 Data URL
+                const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = fileName;
+                
+                // 触发点击
+                if (document.createEvent) {
+                    const event = document.createEvent('MouseEvents');
+                    event.initEvent('click', true, true);
+                    link.dispatchEvent(event);
+                } else {
+                    link.click();
+                }
+
+                // 清理 URL
+                setTimeout(() => {
+                    URL.revokeObjectURL(url);
+                }, 100);
+            } else {
+                // 桌面设备：使用传统方法
+                const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = fileName;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(a.href);
+            }
+        } catch (error) {
+            console.error('导出记录时出错：', error);
+            alert('导出记录失败，请重试或联系技术支持。');
+        }
     }
 
     // 打印诊断报告
