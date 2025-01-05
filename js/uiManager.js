@@ -214,12 +214,54 @@ class UIManager {
         text = text.replace(/\n{3,}/g, '\n\n')
             .replace(/^\s+|\s+$/g, '');
 
-        // 保持原有格式，只处理基本的清理
-        return text
-            .split('\n')
-            .map(line => line.trim())
+        // 处理标题和分隔符
+        text = text.replace(/【(.+?)】/g, '\n【$1】\n');
+        text = text.replace(/\-{3,}/g, '\n--------------------------------\n');
+
+        // 处理列表项
+        text = text.replace(/(\d+\.|\*|\-)\s+/g, '\n$1 ');
+
+        // 处理子项缩进
+        const lines = text.split('\n').map(line => {
+            line = line.trim();
+            if (line.match(/^\d+\./)) {
+                return line;  // 主要序号不缩进
+            } else if (line.match(/^\*|\-/)) {
+                return '    ' + line;  // 子项缩进4个空格
+            }
+            return line;
+        });
+
+        // 合并行并处理空行
+        return lines
+            .filter(line => line)  // 移除空行
+            .join('\n')
+            .replace(/\n{3,}/g, '\n\n');  // 最多保留两个连续空行
+    }
+
+    // 辅助方法：格式化医生回复
+    _formatDoctorResponse(text) {
+        if (!text) return '';
+
+        // 将HTML的<br>标签转换为实际的换行符
+        text = text.replace(/<br\s*\/?>/g, '\n');
+        
+        // 处理分段和缩进
+        const lines = text.split('\n').map(line => {
+            line = line.trim();
+            // 保持原有的缩进和格式
+            if (line.startsWith('1.') || line.startsWith('2.') || line.startsWith('3.')) {
+                return '\n' + line;
+            } else if (line.startsWith('-')) {
+                return '    ' + line;
+            }
+            return line;
+        });
+
+        return lines
             .filter(line => line)
-            .join('\n');
+            .join('\n')
+            .replace(/\n{3,}/g, '\n\n');
     }
 
     // 导出聊天记录
@@ -235,7 +277,7 @@ class UIManager {
             
             // 添加基本信息
             content += '【基本信息】\n';
-            content += '---------------------------------\n';
+            content += '--------------------------------\n';
             content += `就诊时间：${timestamp}\n`;
             content += `患者姓名：${this.userInfo.name}\n`;
             content += `性    别：${this.userInfo.gender}\n`;
@@ -243,37 +285,62 @@ class UIManager {
             
             // 添加问诊记录
             content += '【问诊记录】\n';
-            content += '---------------------------------\n';
+            content += '--------------------------------\n\n';
             const messages = Array.from(this.chatMessages.children);
             messages.forEach(msg => {
                 const isUser = msg.classList.contains('user-message');
                 const messageContent = msg.querySelector('.message-content') || msg;
-                const text = messageContent.textContent || messageContent.innerText;
-                content += `${isUser ? '患者' : '医生'}：${text}\n\n`;
+                let text;
+                
+                // 获取原始HTML内容并处理格式
+                if (messageContent.innerHTML) {
+                    text = messageContent.innerHTML
+                        .replace(/<br\s*\/?>/g, '\n')  // 将<br>转换为换行符
+                        .replace(/<[^>]+>/g, '')       // 移除其他HTML标签
+                        .replace(/&nbsp;/g, ' ')       // 处理空格
+                        .replace(/&lt;/g, '<')         // 处理特殊字符
+                        .replace(/&gt;/g, '>')
+                        .replace(/&amp;/g, '&');
+                } else {
+                    text = messageContent.textContent || messageContent.innerText;
+                }
+
+                if (text.trim()) {
+                    if (isUser) {
+                        content += `▶ 患者：${text}\n\n`;
+                    } else {
+                        // 处理医生的思考过程提示
+                        if (text === '正在进行辨证分析...' || text === '正在制定治疗方案...') {
+                            content += '\n============== ' + text + ' ==============\n\n';
+                        } else {
+                            content += `★ 医生：\n${this._formatDoctorResponse(text)}\n\n`;
+                        }
+                    }
+                }
             });
             
             // 添加辨证分析结果
             if (this.diagnosisSummary.innerHTML) {
                 content += '【辨证分析】\n';
-                content += '---------------------------------\n';
+                content += '--------------------------------\n\n';
                 const diagnosisText = this.diagnosisSummary.textContent || this.diagnosisSummary.innerText;
-                content += diagnosisText + '\n\n';
+                content += this._formatSection(diagnosisText) + '\n\n';
             }
             
             // 添加治疗方案（如果有）
             if (chatManager.treatmentHistory && chatManager.treatmentHistory.length > 0) {
                 content += '【治疗方案】\n';
-                content += '---------------------------------\n';
+                content += '--------------------------------\n\n';
                 const treatmentContent = chatManager.treatmentHistory
                     .filter(msg => msg.role === 'assistant')
                     .map(msg => msg.content)
                     .join('\n\n');
-                content += treatmentContent + '\n\n';
+                content += this._formatSection(treatmentContent) + '\n\n';
             }
             
             // 添加注意事项
             content += '【注意事项】\n';
-            content += '---------------------------------\n';
+            content += '--------------------------------\n';
             content += '1. 本记录由AI智能辅助系统生成，仅供参考\n';
             content += '2. 具体诊疗方案请遵医嘱\n';
             content += '3. 如有不适，请及时就医\n\n';
