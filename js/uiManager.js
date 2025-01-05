@@ -210,27 +210,15 @@ class UIManager {
     _formatSection(text) {
         if (!text) return '';
         
-        // 移除Markdown标记
-        text = text.replace(/\*\*/g, '')
-            .replace(/\#\#\#/g, '')
-            .replace(/\-/g, '•');
+        // 移除多余的空行和空格
+        text = text.replace(/\n{3,}/g, '\n\n')
+            .replace(/^\s+|\s+$/g, '');
 
-        // 分行处理
-        return text.split('\n')
+        // 保持原有格式，只处理基本的清理
+        return text
+            .split('\n')
             .map(line => line.trim())
             .filter(line => line)
-            .map(line => {
-                // 如果是标题（以"【"开头），不缩进
-                if (line.startsWith('【')) {
-                    return line;
-                }
-                // 如果是子项（以"•"开头），缩进两个空格
-                if (line.startsWith('•')) {
-                    return '  ' + line;
-                }
-                // 其他内容缩进四个空格
-                return '    ' + line;
-            })
             .join('\n');
     }
 
@@ -260,39 +248,15 @@ class UIManager {
             const isUser = msg.classList.contains('user-message');
             const messageContent = msg.querySelector('.message-content') || msg;
             const text = messageContent.textContent || messageContent.innerText;
-            content += `${isUser ? '患者' : '医生'}：${text}\n`;
-            if (!isUser) content += '\n'; // 在医生回复后添加空行，增加可读性
+            content += `${isUser ? '患者' : '医生'}：${text}\n\n`;
         });
-        content += '\n';
         
         // 添加辨证分析结果
         if (this.diagnosisSummary.innerHTML) {
             content += '【辨证分析】\n';
             content += '---------------------------------\n';
             const diagnosisText = this.diagnosisSummary.textContent || this.diagnosisSummary.innerText;
-            
-            // 提取并格式化各个部分
-            const sections = {
-                '症状分析': this._extractSection(diagnosisText, '症状分析'),
-                '病因分析': this._extractSection(diagnosisText, '病因分析'),
-                '八纲辨证': this._extractSection(diagnosisText, '八纲辨证'),
-                '脏腑辨证': this._extractSection(diagnosisText, '脏腑辨证'),
-                '气血津液辨证': this._extractSection(diagnosisText, '气血津液辨证'),
-                '经络辨证': this._extractSection(diagnosisText, '经络辨证'),
-                '六经辨证': this._extractSection(diagnosisText, '六经辨证'),
-                '卫气营血辨证': this._extractSection(diagnosisText, '卫气营血辨证'),
-                '三焦辨证': this._extractSection(diagnosisText, '三焦辨证'),
-                '病位分析': this._extractSection(diagnosisText, '病位分析'),
-                '证型诊断': this._extractSection(diagnosisText, '证型诊断'),
-                '治疗原则': this._extractSection(diagnosisText, '治疗原则')
-            };
-            
-            // 按顺序添加各部分内容
-            Object.entries(sections).forEach(([title, sectionContent]) => {
-                if (sectionContent && sectionContent.trim()) {
-                    content += `【${title}】\n${this._formatSection(sectionContent)}\n\n`;
-                }
-            });
+            content += diagnosisText + '\n\n';
         }
         
         // 添加治疗方案（如果有）
@@ -303,24 +267,7 @@ class UIManager {
                 .filter(msg => msg.role === 'assistant')
                 .map(msg => msg.content)
                 .join('\n\n');
-            
-            // 提取并格式化治疗方案各个部分
-            const treatmentSections = {
-                '治疗原则': this._extractSection(treatmentContent, '治疗原则'),
-                '方药选择': this._extractSection(treatmentContent, '方药选择'),
-                '中药处方': this._extractSection(treatmentContent, '中药处方'),
-                '针灸方案': this._extractSection(treatmentContent, '针灸方案'),
-                '其他疗法': this._extractSection(treatmentContent, '其他疗法'),
-                '调护建议': this._extractSection(treatmentContent, '调护建议'),
-                '饮食指导': this._extractSection(treatmentContent, '饮食指导'),
-                '预防保健': this._extractSection(treatmentContent, '预防保健')
-            };
-
-            Object.entries(treatmentSections).forEach(([title, sectionContent]) => {
-                if (sectionContent && sectionContent.trim()) {
-                    content += `【${title}】\n${this._formatSection(sectionContent)}\n\n`;
-                }
-            });
+            content += treatmentContent + '\n\n';
         }
         
         // 添加注意事项
