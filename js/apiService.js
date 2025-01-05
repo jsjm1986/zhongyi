@@ -1,29 +1,14 @@
 class ApiService {
     constructor() {
         // API配置
-        this.API_KEY = ''; // 需要用户在初始化时设置
+        this.API_KEY = 'sk-7eeeb89fd2b64611b73cea2c9f7d55de';
         this.API_URL = 'https://api.deepseek.com/v1/chat/completions';
         this.config = API_CONFIG;
-    }
-
-    // 设置API密钥
-    setApiKey(apiKey) {
-        this.API_KEY = apiKey;
-    }
-
-    // 检查API密钥是否已设置
-    checkApiKey() {
-        if (!this.API_KEY) {
-            throw new Error('请先设置API密钥');
-        }
     }
 
     // 调用Deepseek API
     async callDeepseekAPI(messages, onChunk) {
         try {
-            // 检查API密钥
-            this.checkApiKey();
-
             // 准备请求参数
             const requestBody = {
                 model: this.config.model,
@@ -48,9 +33,6 @@ class ApiService {
 
             // 检查响应状态
             if (!response.ok) {
-                if (response.status === 401) {
-                    throw new Error('API密钥无效或未授权');
-                }
                 const errorData = await response.json();
                 throw new Error(errorData.error?.message || `API请求失败: ${response.status} ${response.statusText}`);
             }

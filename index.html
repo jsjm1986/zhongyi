@@ -3,15 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>冯式中医智能辩证系统</title>
+    <title>冯式中医智能问诊系统</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
     <div class="container">
+        <!-- 用户信息模态框 -->
+        <div id="userInfoModal" class="modal">
+            <div class="modal-content">
+                <h2>个人信息录入</h2>
+                <div class="user-info-form">
+                    <div class="form-group">
+                        <label for="userName">姓名：</label>
+                        <input type="text" id="userName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="userAge">年龄：</label>
+                        <input type="number" id="userAge" min="0" max="120" required>
+                    </div>
+                    <div class="form-group">
+                        <label>性别：</label>
+                        <div class="radio-group">
+                            <input type="radio" id="male" name="gender" value="男" required>
+                            <label for="male">男</label>
+                            <input type="radio" id="female" name="gender" value="女">
+                            <label for="female">女</label>
+                        </div>
+                    </div>
+                    <button id="submitUserInfo" class="submit-btn">开始问诊</button>
+                </div>
+            </div>
+        </div>
+
         <!-- 头部 -->
         <header>
-            <h1><i class="fas fa-hospital"></i> 冯式中医智能辩证系统</h1>
+            <h1><i class="fas fa-hospital"></i> 冯式中医智能问诊系统</h1>
             <div class="mode-indicator">
                 <i class="fas fa-user-md"></i> 当前模式：问诊
             </div>
@@ -104,18 +131,6 @@
                     </ul>
                     <p class="disclaimer">注意：本系统仅供参考，具体诊疗请遵医嘱。</p>
                 </div>
-            </div>
-        </div>
-
-        <!-- API密钥设置模态框 -->
-        <div id="apiKeyModal" class="modal">
-            <div class="modal-content">
-                <h2>设置API密钥</h2>
-                <div class="api-key-form">
-                    <input type="password" id="apiKeyInput" placeholder="请输入您的API密钥">
-                    <button id="setApiKeyBtn">确定</button>
-                </div>
-                <p class="note">请输入有效的API密钥以使用系统功能。</p>
             </div>
         </div>
     </div>
