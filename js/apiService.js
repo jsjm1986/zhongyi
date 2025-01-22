@@ -1,7 +1,7 @@
 class ApiService {
     constructor() {
         // API配置
-        this.API_KEY = 'sk-37407b75932947a88b248185c1a71515';
+        this.API_KEY = 'sk';
         this.API_URL = 'https://api.deepseek.com/v1/chat/completions';
         this.config = API_CONFIG;
     }
