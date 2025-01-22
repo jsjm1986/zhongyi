@@ -825,3 +825,126 @@ button:hover {
         }
     }
 }
+
+.version-notice {
+    background-color: #f8f9fa;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.version-notice .notice-text {
+    color: #dc3545;
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    padding: 10px;
+    background-color: #fff3f3;
+    border-radius: 6px;
+}
+
+.version-notice .contact-info {
+    color: #495057;
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+.version-notice .contact-info p {
+    margin-bottom: 15px;
+    color: #666;
+}
+
+.copy-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 12px 0;
+    padding: 10px;
+    background-color: #fff;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.copy-item span {
+    color: #666;
+}
+
+.copy-item strong {
+    color: #28a745;
+    font-weight: bold;
+    font-size: 18px;
+    padding: 4px 8px;
+    background-color: #f8fff8;
+    border-radius: 4px;
+    border: 1px dashed #28a745;
+}
+
+.copy-btn {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.copy-btn:hover {
+    background-color: #218838;
+    transform: translateY(-1px);
+}
+
+.copy-btn.copied {
+    background-color: #218838;
+}
+
+.copy-btn i {
+    font-size: 14px;
+}
+
+/* 暗色模式支持 */
+@media (prefers-color-scheme: dark) {
+    .version-notice {
+        background-color: #2d2d2d;
+        border-color: #444;
+    }
+
+    .version-notice .notice-text {
+        background-color: #3d2d2d;
+    }
+
+    .copy-item {
+        background-color: #3d3d3d;
+        border-color: #444;
+    }
+
+    .copy-item strong {
+        background-color: #2d3d2d;
+        border-color: #28a745;
+        color: #2ecc71;
+    }
+
+    .copy-item span {
+        color: #ddd;
+    }
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+    .version-notice {
+        padding: 15px;
+    }
+
+    .copy-item {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .copy-item strong {
+        font-size: 16px;
+    }
+}

@@ -565,4 +565,73 @@ class UIManager {
     }
 }
 
-const uiManager = new UIManager(); 
+const uiManager = new UIManager();
+
+// 复制功能实现
+function initCopyButtons() {
+    const copyButtons = document.querySelectorAll('.copy-btn');
+    
+    copyButtons.forEach(button => {
+        button.addEventListener('click', async () => {
+            const textToCopy = button.getAttribute('data-copy');
+            try {
+                await navigator.clipboard.writeText(textToCopy);
+                
+                // 视觉反馈
+                button.classList.add('copied');
+                const originalIcon = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-check"></i>';
+                
+                // 2秒后恢复原状
+                setTimeout(() => {
+                    button.classList.remove('copied');
+                    button.innerHTML = originalIcon;
+                }, 2000);
+                
+                // 显示提示
+                const toast = document.createElement('div');
+                toast.className = 'toast';
+                toast.textContent = '复制成功！';
+                document.body.appendChild(toast);
+                
+                setTimeout(() => {
+                    toast.remove();
+                }, 2000);
+            } catch (err) {
+                console.error('复制失败:', err);
+                alert('复制失败，请手动复制');
+            }
+        });
+    });
+}
+
+// 添加 Toast 提示样式
+const style = document.createElement('style');
+style.textContent = `
+    .toast {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: rgba(40, 167, 69, 0.9);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 4px;
+        z-index: 1000;
+        animation: fadeInOut 2s ease;
+    }
+    
+    @keyframes fadeInOut {
+        0% { opacity: 0; transform: translate(-50%, 20px); }
+        15% { opacity: 1; transform: translate(-50%, 0); }
+        85% { opacity: 1; transform: translate(-50%, 0); }
+        100% { opacity: 0; transform: translate(-50%, -20px); }
+    }
+`;
+document.head.appendChild(style);
+
+// 在文档加载完成后初始化复制按钮
+document.addEventListener('DOMContentLoaded', () => {
+    initCopyButtons();
+    // ... existing code ...
+}); 
