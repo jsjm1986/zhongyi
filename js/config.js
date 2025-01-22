@@ -1,6 +1,6 @@
 // API配置
 const API_CONFIG = {
-    model: 'deepseek-chat',
+    model: 'deepseek-cha',
     temperature: 0.7,
     max_tokens: 2000,
     top_p: 0.95,
